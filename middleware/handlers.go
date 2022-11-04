@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go-img-svc/models"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func createConnection() *sql.DB {
@@ -51,6 +53,35 @@ func GetAllMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetMetadata(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Get imageid from request params and convert type to int
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		log.Fatalf("Unable to convert type to int. %v", err)
+	}
+
+	// Get metadata by calling secondary function getMetadata() with image id
+	metadata, err := getMetadata(int64(id))
+	if err != nil {
+		log.Fatalf("Unable to get metadata by ID. Error: %v", err)
+	}
+	// Return error 404 if metadata is empty
+	if metadata.ImageID == 0 {
+		w.WriteHeader(404)
+		return
+	}
+
+	// Send the response
+	err = json.NewEncoder(w).Encode(metadata)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+}
+
 /* ####################################################################################### */
 /* ---------------------------------- Handler functions ---------------------------------- */
 /* ####################################################################################### */
@@ -79,4 +110,26 @@ func getAllMetadata() ([]models.Image, error) {
 	}
 
 	return images, err
+}
+
+func getMetadata(id int64) (models.Image, error) {
+	db := createConnection()
+	defer db.Close()
+
+	var image models.Image
+	sqlStatement := `SELECT * FROM images WHERE imageid=$1`
+	row := db.QueryRow(sqlStatement, id)
+
+	err := row.Scan(&image.ImageID, &image.Filepath, &image.Filesize, &image.Width, &image.Height, &image.Type, &image.Date)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("Query returned zero rows.")
+		return image, nil
+	case nil:
+		return image, nil
+	default:
+		log.Fatalf("Unable to scan the row. Error: %v", err)
+	}
+
+	return image, err
 }
