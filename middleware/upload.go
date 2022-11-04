@@ -3,11 +3,16 @@ package middleware
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
+	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -71,4 +76,37 @@ func saveOnDisk(data string) bool {
 		gif.Encode(f, im, nil)
 	}
 	return true
+}
+
+// Shortcut to have this directory hardcoded. Change this to your own path.
+const dir_to_scan string = "/Users/oscarrohde/GolandProjects/go-img-svc/img"
+
+func extractImgInfo() {
+	// Search for new files in /img and extract its metadata
+
+	files, _ := ioutil.ReadDir(dir_to_scan)
+	for _, imgFile := range files {
+
+		if reader, err := os.Open(filepath.Join(dir_to_scan, imgFile.Name())); err == nil {
+			defer reader.Close()
+			im, _, err := image.DecodeConfig(reader)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s: %v\n", imgFile.Name(), err)
+				continue
+			}
+			fmt.Printf("%s %d %d %d %d\n", imgFile.Name(), im.Width, im.Height, imgFile.Size(), imgFile.ModTime().YearDay())
+			fileExtention := strings.SplitAfter(imgFile.Name(), ".")
+
+			// Rename and move image to /img/saved
+			oldFilename := dir_to_scan + "/" + imgFile.Name()
+			newFilename := dir_to_scan + "/saved/" + strconv.Itoa(imgFile.ModTime().Nanosecond()) + "." + fileExtention[1]
+			err = os.Rename(oldFilename, newFilename)
+			if err != nil {
+				log.Fatalf("Error while renaming image. %v", err)
+			}
+
+		} else {
+			fmt.Println("Impossible to open the file:", err)
+		}
+	}
 }

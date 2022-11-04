@@ -17,6 +17,9 @@ CREATE TABLE images (
 
 2) Create a `.env` file containing `POSTGRES_URL="postgres://<user>@localhost:5432/imagesdb?sslmode=disable"` 
 
+3) Change the filepath in const `dir_to_scan` located in `upload.go` to correspond to your machine.
+
+
 ## Endpoints
 
 `GET /v1/images`
@@ -38,3 +41,8 @@ Upload new image. Request body should be image data.
 `PUT /v1/images/<id>`
 
 Update image. Request body should be image data.
+
+## Shortcuts
+* Hardcoded filepaths. 
+* Saving images should not all be put in the same folder /img/saved, but instead be saved dynamically.
+Eg dynamically save in folders `//ROOT/img/YYYY/MM/DD/HH/MM` depending on the time. Could be more specific with `/SS` etc if needed.
