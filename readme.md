@@ -1,5 +1,21 @@
 # Image service
-A service for storing and retrieving image data.
+A service for storing and retrieving image data, using Go (Golang) and PostgreSQL.
+
+## Setup 
+1) Create a db called imagesdb `CREATE DATABASE imagesdb;` and `\c imagesdb` into it. Then add the following table `images`:
+```
+CREATE TABLE images (
+    imageid SERIAL PRIMARY KEY,
+    filepath TEXT,
+    filesize INT,
+    width INT,
+    height INT,
+    type TEXT,
+    date TEXT
+    );
+```
+
+2) Create a `.env` file containing `POSTGRES_URL="postgres://<user>@localhost:5432/imagesdb?sslmode=disable"` 
 
 ## Endpoints
 
