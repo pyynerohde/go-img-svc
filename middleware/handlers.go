@@ -101,7 +101,9 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO Convert image to base64
+	// Convert image to base64
+	path := img.Filepath
+	base64img := imgToBase64(path)
 
 	// Send the response
 	err = json.NewEncoder(w).Encode(base64img)
