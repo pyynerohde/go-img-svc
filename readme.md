@@ -37,6 +37,8 @@ Get image data for image with id `<id>`.
 `POST /v1/images`
 
 Upload new image. Request body should be image data.
+* Working with formats PNG, JPEG, GIF.
+* Send base64 encoded image in request body.  
 
 `PUT /v1/images/<id>`
 
