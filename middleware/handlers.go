@@ -83,6 +83,34 @@ func GetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetImage(w http.ResponseWriter, r *http.Request) {
+	// Get imageid from request params and convert type to int
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		log.Fatalf("Unable to convert type to int. %v", err)
+	}
+
+	// Get filepath by calling getImage() with image id
+	img, err := getImage(int64(id))
+	if err != nil {
+		log.Fatalf("Unable to get metadata by ID. Error: %v", err)
+	}
+	if img.ImageID == 0 {
+		w.WriteHeader(404)
+		return
+	}
+
+	// TODO Convert image to base64
+
+	// Send the response
+	err = json.NewEncoder(w).Encode(base64img)
+	if err != nil {
+		w.WriteHeader(400)
+		return
+	}
+}
+
 func AddImage(w http.ResponseWriter, r *http.Request) {
 
 	// Request body should be the whole base64 encoding of an image.
@@ -137,6 +165,29 @@ func getMetadata(id int64) (models.Image, error) {
 	db := createConnection()
 	defer db.Close()
 
+	var image models.Image
+	sqlStatement := `SELECT * FROM images WHERE imageid=$1`
+	row := db.QueryRow(sqlStatement, id)
+
+	err := row.Scan(&image.ImageID, &image.Filepath, &image.Filesize, &image.Width, &image.Height, &image.Type, &image.Date)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("Query returned zero rows.")
+		return image, nil
+	case nil:
+		return image, nil
+	default:
+		log.Fatalf("Unable to scan the row. Error: %v", err)
+	}
+
+	return image, err
+}
+
+func getImage(id int64) (models.Image, error) {
+	db := createConnection()
+	defer db.Close()
+
+	// Query to get the filepath of the image, using the ID (taken from GetImage)
 	var image models.Image
 	sqlStatement := `SELECT * FROM images WHERE imageid=$1`
 	row := db.QueryRow(sqlStatement, id)
