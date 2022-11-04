@@ -85,6 +85,7 @@ func GetMetadata(w http.ResponseWriter, r *http.Request) {
 
 func AddImage(w http.ResponseWriter, r *http.Request) {
 
+	// Request body should be the whole base64 encoding of an image.
 	// convert request body to bytes
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -92,6 +93,12 @@ func AddImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save image from base64
+	saveSuccess := saveOnDisk(string(bytes))
+	if saveSuccess != true {
+		w.WriteHeader(400)
+		return
+	}
+
 	// Extract metadata
 	// Add to db
 
