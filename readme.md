@@ -21,6 +21,7 @@ CREATE TABLE images (
 
 
 ## Endpoints
+APIs are found at `http://localhost:8080/api`. 
 
 `GET /v1/images`
 
