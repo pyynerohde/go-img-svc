@@ -18,6 +18,7 @@ CREATE TABLE images (
 2) Create a `.env` file containing `POSTGRES_URL="postgres://<user>@localhost:5432/imagesdb?sslmode=disable"` 
 
 3) Change the filepath in const `dir_to_scan` located in `upload.go` to correspond to your machine.
+4) Install dependencies `go mod tidy`, build and run. 
 
 
 ## Endpoints
