@@ -133,6 +133,38 @@ func AddImage(w http.ResponseWriter, r *http.Request) {
 	extractImgInfo()
 }
 
+func UpdateImage(w http.ResponseWriter, r *http.Request) {
+	// Get imageid from request params and convert type to int
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		log.Fatalf("Unable to convert type to int. %v", err)
+	}
+
+	// Verify that the ID exists already and can be updated
+	var image models.Image
+	rowsToUpdate := updateImage(int64(id), image)
+	if rowsToUpdate == 0 {
+		w.WriteHeader(404)
+		return
+	}
+
+	// convert request body to bytes, then to string for saveOnDisk() to read
+	bytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Save updated image on disk
+	saveSuccess := saveOnDisk(string(bytes))
+	if saveSuccess != true {
+		w.WriteHeader(400)
+	}
+
+	// Update metadata in db, using updateImage
+	updateMetadata(int64(id))
+}
+
 /* ####################################################################################### */
 /* ---------------------------------- Handler functions ---------------------------------- */
 /* ####################################################################################### */
@@ -220,4 +252,29 @@ func addImage(image models.Image) int64 {
 	}
 	fmt.Printf("Image added successully: %v", id)
 	return id
+}
+
+func updateImage(id int64, image models.Image) int64 {
+	// Shortcut. Does not delete old entry. Could be done by getting filepath and use os.Remove(filepath).
+
+	db := createConnection()
+	defer db.Close()
+
+	sqlStatement := `UPDATE images SET filepath=$2, filesize=$3, width=$4, height=$5, type=$6, date=$7 WHERE imageid=$1`
+	res, err := db.Exec(sqlStatement, id, image.Filepath, image.Filesize, image.Width, image.Height, image.Type, image.Date)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. Error: %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatalf("Error while performing RowsAffected(). Error: %v", err)
+	}
+	if rowsAffected == 0 {
+		fmt.Println("Query returned zero rows.")
+		return rowsAffected
+	}
+	fmt.Printf("Image was updated successfully. Images updated: %v", rowsAffected)
+	return rowsAffected
 }
