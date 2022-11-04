@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go-img-svc/models"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -81,6 +82,18 @@ func GetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func AddImage(w http.ResponseWriter, r *http.Request) {
+
+	// convert request body to bytes
+	bytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Save image from base64
+	// Extract metadata
+	// Add to db
 
 /* ####################################################################################### */
 /* ---------------------------------- Handler functions ---------------------------------- */
