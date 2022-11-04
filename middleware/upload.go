@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"go-img-svc/models"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -105,8 +107,25 @@ func extractImgInfo() {
 				log.Fatalf("Error while renaming image. %v", err)
 			}
 
+			// Add above information to Struct + db
+			addStructToDb(newFilename, im, imgFile)
+
 		} else {
 			fmt.Println("Impossible to open the file:", err)
 		}
 	}
+}
+
+func addStructToDb(filepath string, im image.Config, imgFile fs.FileInfo) *models.Image {
+	var img models.Image
+	img.Filepath = filepath
+	img.Filesize = imgFile.Size()
+	img.Width = int64(im.Width)
+	img.Height = int64(im.Height)
+	img.Type = strings.SplitAfter(imgFile.Name(), ".")[1]
+	img.Date = imgFile.ModTime().String()
+
+	// Add image to database with addImage()
+	addImage(img)
+	return &img
 }
