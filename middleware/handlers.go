@@ -99,8 +99,9 @@ func AddImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract metadata
-	// Add to db
+	// Extract metadata and add to db
+	extractImgInfo()
+}
 
 /* ####################################################################################### */
 /* ---------------------------------- Handler functions ---------------------------------- */
@@ -152,4 +153,18 @@ func getMetadata(id int64) (models.Image, error) {
 	}
 
 	return image, err
+}
+
+func addImage(image models.Image) int64 {
+	db := createConnection()
+	defer db.Close()
+
+	var id int64
+	sqlStatement := `INSERT INTO images (filepath, filesize, width, height, type, date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING imageid`
+	err := db.QueryRow(sqlStatement, image.Filepath, image.Filesize, image.Width, image.Height, image.Type, image.Date).Scan(&id)
+	if err != nil {
+		log.Fatalf("Unable to execute the query. Error: %v", err)
+	}
+	fmt.Printf("Image added successully: %v", id)
+	return id
 }
