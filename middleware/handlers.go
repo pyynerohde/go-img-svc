@@ -62,13 +62,17 @@ func GetMetadata(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		log.Fatalf("Unable to convert type to int. %v", err)
+		w.WriteHeader(400)
+		return
+		//log.Fatalf("Unable to convert type to int. %v", err)
 	}
 
 	// Get metadata by calling secondary function getMetadata() with image id
 	metadata, err := getMetadata(int64(id))
 	if err != nil {
-		log.Fatalf("Unable to get metadata by ID. Error: %v", err)
+		w.WriteHeader(400)
+		return
+		//log.Fatalf("Unable to get metadata by ID. Error: %v", err)
 	}
 	// Return error 404 if metadata is empty
 	if metadata.ImageID == 0 {
@@ -89,13 +93,17 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		log.Fatalf("Unable to convert type to int. %v", err)
+		w.WriteHeader(400)
+		return
+		//log.Fatalf("Unable to convert type to int. %v", err)
 	}
 
 	// Get filepath by calling getImage() with image id
 	img, err := getImage(int64(id))
 	if err != nil {
-		log.Fatalf("Unable to get metadata by ID. Error: %v", err)
+		w.WriteHeader(400)
+		return
+		//log.Fatalf("Unable to get metadata by ID. Error: %v", err)
 	}
 	if img.ImageID == 0 {
 		w.WriteHeader(404)
@@ -139,7 +147,9 @@ func UpdateImage(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		log.Fatalf("Unable to convert type to int. %v", err)
+		w.WriteHeader(400)
+		return
+		//log.Fatalf("Unable to convert type to int. %v", err)
 	}
 
 	// Verify that the ID exists already and can be updated
