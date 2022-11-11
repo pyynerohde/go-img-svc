@@ -55,3 +55,4 @@ Update image. Request body should be image data.
 Eg dynamically save in folders `//ROOT/img/YYYY/MM/DD/HH/MM` depending on the time. Could be more specific with `/SS` etc if needed.
 * Old image is not deleted from disk when updating an existing image. 
 Could be done by getting filepath and use os.Remove(filepath).
+* GetAllMetadata will list everything which is not really scalable. Should have a limit on how much is fetched and tell the user that.
